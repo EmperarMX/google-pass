@@ -1,0 +1,4 @@
+export enum SectionLabel {
+   SECTION_LABEL_UNSPECIFIED = 'SECTION_LABEL_UNSPECIFIED',
+   SECTION = 'SECTION',
+}

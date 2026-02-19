@@ -1,0 +1,6 @@
+export enum GateLabel {
+   GATE_LABEL_UNSPECIFIED = 'GATE_LABEL_UNSPECIFIED',
+   GATE = 'GATE',
+   DOOR = 'DOOR',
+   ENTRANCE = 'ENTRANCE',
+}
