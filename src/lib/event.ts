@@ -1,3 +1,5 @@
 import { EventTicketClass } from '../types/EventTicketClass';
+import { EventTicketObject } from '../types/EventTicketObject';
 
-export const createClassEvent = (eventTicketClss: EventTicketClass) => {};
+
+export type { EventTicketClass, EventTicketObject }

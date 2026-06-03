@@ -8,5 +8,5 @@ export type LocalizedString = {
    /**
     * Contains the string to be displayed if no appropriate translation is available.
     */
-   defaultValue?: TranslatedString;
+   defaultValue: TranslatedString;
 };

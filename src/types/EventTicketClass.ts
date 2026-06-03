@@ -179,7 +179,7 @@ export interface EventTicketClass {
    /**
     * Translated strings for the issuerName. Recommended maximum length is 20 characters to ensure full string is displayed on smaller screens.
     */
-   localizedIssuerName?: string;
+   localizedIssuerName?: LocalizedString;
    /**
     * Identifies whether multiple users and devices will save the same object referencing this class.
     */
