@@ -194,6 +194,10 @@ const eventClass = wallet.createClassEvent({
   securityAnimation: {
     animationType: 'FOIL_SHIMMER',
   },
+  // Smart Tap (NFC): enable on the class and declare the authorized redemption issuer.
+  // Requires prior enrollment in the Smart Tap program via the Google Pay & Wallet Console.
+  enableSmartTap: true,
+  redemptionIssuers: [`${ISSUER_ID}`], // Your issuer ID as a string
 });
 
 // Step 2 — Define the individual pass object
@@ -226,6 +230,16 @@ const eventObject = wallet.createObjectEvent({
         },
       ],
     },
+  },
+  // Smart Tap (NFC): the value transmitted to the terminal when the user taps.
+  // Only ASCII characters are supported. Must match what the terminal expects.
+  smartTapRedemptionValue: 'VIP-001',
+  // Optional: restrict NFC behavior at the OS level.
+  // 'BLOCK_PAYMENT' prevents the pass from responding to payment readers.
+  // 'BLOCK_CLOSED_LOOP_TRANSIT' prevents transit reader interactions.
+  // Omit passConstraints entirely if no NFC restrictions are needed.
+  passConstraints: {
+    nfcConstraint: ['BLOCK_PAYMENT'],
   },
 });
 
