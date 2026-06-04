@@ -1,7 +1,6 @@
-export enum State {
-   STATE_UNSPECIFIED = 'STATE_UNSPECIFIED',
-   ACTIVE = 'ACTIVE',
-   COMPLETED = 'COMPLETED',
-   EXPIRED = 'EXPIRED',
-   INACTIVE = 'INACTIVE'
-}
+export type State = 
+   | 'STATE_UNSPECIFIED'
+   | 'ACTIVE'
+   | 'COMPLETED'
+   | 'EXPIRED'
+   | 'INACTIVE';

@@ -1,4 +1,4 @@
-export enum SeatLabel {
-   SEAT_LABEL_UNSPECIFIED = 'SEAT_LABEL_UNSPECIFIED',
-   SEAT = 'SEAT',
-}
+export type SeatLabel = 
+   | 'SEAT_LABEL_UNSPECIFIED'
+   | 'SEAT'
+;

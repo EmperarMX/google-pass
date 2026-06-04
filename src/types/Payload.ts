@@ -1,11 +1,8 @@
-export interface Payload<T, X> {
+export interface Payload<P> {
    iss: string;
    aud: string;
    typ: string;
    iat: number;
    origins: string[];
-   payload: {
-      eventTicketClasses: T[];
-      eventTicketObjects: X[];
-   };
+   payload: P;
 }

@@ -1,6 +1,6 @@
-export enum GateLabel {
-   GATE_LABEL_UNSPECIFIED = 'GATE_LABEL_UNSPECIFIED',
-   GATE = 'GATE',
-   DOOR = 'DOOR',
-   ENTRANCE = 'ENTRANCE',
-}
+export type GateLabel = 
+   | 'GATE_LABEL_UNSPECIFIED'
+   | 'GATE'
+   | 'DOOR'
+   | 'ENTRANCE'
+;

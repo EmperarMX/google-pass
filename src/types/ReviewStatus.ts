@@ -1,7 +1,6 @@
-export enum ReviewStatus {
-   REVIEW_STATUS_UNSPECIFIED = 'REVIEW_STATUS_UNSPECIFIED',
-   UNDER_REVIEW = 'UNDER_REVIEW',
-   APPROVED = 'APPROVED',
-   REJECTED = 'REJECTED',
-   DRAFT = 'DRAFT',
-}
+export type ReviewStatus = 
+   | 'REVIEW_STATUS_UNSPECIFIED'
+   | 'UNDER_REVIEW'
+   | 'APPROVED'
+   | 'REJECTED'
+   | 'DRAFT';

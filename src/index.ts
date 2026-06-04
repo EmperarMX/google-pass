@@ -38,9 +38,9 @@ export class GoogleWalletLib {
             eventTicketClasses: [eventTicketClass],
             eventTicketObjects: [eventTicketObjects],
          },
-      } as Payload<EventTicketClass, EventTicketObject>;
+      } as Payload<{ eventTicketClasses: EventTicketClass[], eventTicketObjects: EventTicketObject[] }>;
    };
-   generateSaveUrl = <T, X>(payload: Payload<T, X>) => {
+   generateSaveUrl = <P>(payload: Payload<P>) => {
       const token = jwt.sign(payload, this.credentials.private_key, { algorithm: 'RS256' });
       return `https://pay.google.com/gp/v/save/${token}`;
    };

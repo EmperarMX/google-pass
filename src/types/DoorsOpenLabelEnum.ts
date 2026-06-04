@@ -1,5 +1,5 @@
-export enum DoorsOpenLabelEnum {
-   DOORS_OPEN_LABEL_UNSPECIFIED = 'DOORS_OPEN_LABEL_UNSPECIFIED',
-   DOORS_OPEN = 'DOORS_OPEN',
-   GATES_OPEN = 'GATES_OPEN',
-}
+export type DoorsOpenLabelEnum = 
+   | 'DOORS_OPEN_LABEL_UNSPECIFIED'
+   | 'DOORS_OPEN'
+   | 'GATES_OPEN'
+;

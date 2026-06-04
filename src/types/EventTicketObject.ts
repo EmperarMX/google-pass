@@ -88,7 +88,7 @@ export type EventTicketObject = {
     * The time period this object will be active and object can be used. An object's state will be changed to expired when this time period has passed.
     */
    validTimeInterval?: TimeInterval;
-   locations?: LatLongPoint;
+   locations?: LatLongPoint[];
    /**
     * Indicates if the object has users. This field is set by the platform.
     */

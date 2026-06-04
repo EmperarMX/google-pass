@@ -1,4 +1,4 @@
-export enum TotpAlgorithm {
-   TOTP_ALGORITHM_UNSPECIFIED = 'TOTP_ALGORITHM_UNSPECIFIED',
-   TOTP_SHA1 = 'TOTP_SHA1'
-}
+export type TotpAlgorithm = 
+   | 'TOTP_ALGORITHM_UNSPECIFIED'
+   | 'TOTP_SHA1'
+;

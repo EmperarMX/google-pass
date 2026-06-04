@@ -1,4 +1,4 @@
-export enum AnimationType {
-   ANIMATION_UNSPECIFIED = 'ANIMATION_UNSPECIFIED',
-   FOIL_SHIMMER = 'FOIL_SHIMMER',
-}
+export type AnimationType = 
+   | 'ANIMATION_UNSPECIFIED'
+   | 'FOIL_SHIMMER'
+;

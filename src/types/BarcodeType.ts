@@ -1,15 +1,15 @@
-export enum BarcodeType {
-   BARCODE_TYPE_UNSPECIFIED = 'BARCODE_TYPE_UNSPECIFIED',
-   AZTEC = 'AZTEC',
-   CODE_39 = 'CODE_39',
-   CODE_128 = 'CODE_128',
-   CODABAR = 'CODABAR',
-   DATA_MATRIX = 'DATA_MATRIX',
-   EAN_8 = 'EAN_8',
-   EAN_13 = 'EAN_13',
-   ITF_14 = 'ITF_14',
-   PDF_417 = 'PDF_417',
-   QR_CODE = 'QR_CODE',
-   UPC_A = 'UPC_A',
-   TEXT_ONLY = 'TEXT_ONLY'
-}
+export type BarcodeType = 
+   | 'BARCODE_TYPE_UNSPECIFIED'
+   | 'AZTEC'
+   | 'CODE_39'
+   | 'CODE_128'
+   | 'CODABAR'
+   | 'DATA_MATRIX'
+   | 'EAN_8'
+   | 'EAN_13'
+   | 'ITF_14'
+   | 'PDF_417'
+   | 'QR_CODE'
+   | 'UPC_A'
+   | 'TEXT_ONLY'
+;
