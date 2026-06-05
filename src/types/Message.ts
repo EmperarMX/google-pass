@@ -1,6 +1,6 @@
 import { LocalizedString } from './LocalizedString';
-import { MessageType } from './MessageType';
-import { TimeInterval } from './TimeInterval';
+import { MessageType } from './event/MessageType';
+import { TimeInterval } from './event/TimeInterval';
 
 export type Message = {
    /**

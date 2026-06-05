@@ -1,4 +1,4 @@
-import { TranslatedString } from './TranslatedString';
+import { TranslatedString } from './event/TranslatedString';
 
 export type LocalizedString = {
    /**

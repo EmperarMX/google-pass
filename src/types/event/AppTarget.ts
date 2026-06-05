@@ -1,4 +1,4 @@
-import { Uri } from './Uri';
+import { Uri } from '../Uri';
 
 export type AppTarget = {
    /**

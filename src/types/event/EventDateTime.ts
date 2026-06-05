@@ -1,5 +1,5 @@
 import { DoorsOpenLabelEnum } from './DoorsOpenLabelEnum';
-import { LocalizedString } from './LocalizedString';
+import { LocalizedString } from '../LocalizedString';
 
 export type EventDateTime = {
    /**

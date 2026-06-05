@@ -1,0 +1,14 @@
+export type SharedDataType =
+   | 'SHARED_DATA_TYPE_UNSPECIFIED'
+   | 'FIRST_NAME'
+   | 'LAST_NAME'
+   | 'STREET_ADDRESS'
+   | 'ADDRESS_LINE_1'
+   | 'ADDRESS_LINE_2'
+   | 'ADDRESS_LINE_3'
+   | 'CITY'
+   | 'STATE'
+   | 'ZIPCODE'
+   | 'COUNTRY'
+   | 'EMAIL'
+   | 'PHONE';

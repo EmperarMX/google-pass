@@ -1,4 +1,4 @@
-import { ImageUri } from './ImageUri';
+import { ImageUri } from './event/ImageUri';
 import { LocalizedString } from './LocalizedString';
 
 export type Image = {

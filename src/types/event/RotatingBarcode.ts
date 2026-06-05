@@ -1,6 +1,6 @@
 import { BarcodeRenderEncoding } from "./BarcodeRenderEncoding";
 import { BarcodeType } from "./BarcodeType";
-import { LocalizedString } from "./LocalizedString";
+import { LocalizedString } from "../LocalizedString";
 import { RotatingBarcodeValues } from "./RotatingBarcodeValues";
 import { TotpDetails } from "./TotpDetails";
 

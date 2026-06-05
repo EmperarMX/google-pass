@@ -1,25 +1,25 @@
-import { AppLinkData } from "./AppLinkData";
+import { AppLinkData } from "../AppLinkData";
 import { Barcode } from "./Barcode";
 import { EventReservationInfo } from "./EventReservationInfo";
 import { EventSeat } from "./EventSeat";
 import { EventTicketClass } from "./EventTicketClass";
 import { GroupingInfo } from "./GroupingInfo";
-import { Image } from "./Image";
-import { ImageModuleData } from "./ImageModuleData";
+import { Image } from "../Image";
+import { ImageModuleData } from "../ImageModuleData";
 import { LatLongPoint } from "./LatLongPoint";
-import { LinksModuleData } from "./LinksModuleData";
-import { LocalizedString } from "./LocalizedString";
-import { MerchantLocation } from "./MerchantLocation";
-import { Message } from "./Message";
+import { LinksModuleData } from "../LinksModuleData";
+import { LocalizedString } from "../LocalizedString";
+import { MerchantLocation } from "../MerchantLocation";
+import { Message } from "../Message";
 import { Money } from "./Money";
-import { NotificationSettingsForUpdates } from "./NotificationSettingsForUpdates";
+import { NotificationSettingsForUpdates } from "../NotificationSettingsForUpdates";
 import { PassConstraints } from "./PassConstraints";
 import { RotatingBarcode } from "./RotatingBarcode";
 import { SaveRestrictions } from "./SaveRestrictions";
-import { State } from "./State";
-import { TextModuleData } from "./TextModuleData";
+import { State } from "../State";
+import { TextModuleData } from "../TextModuleData";
 import { TimeInterval } from "./TimeInterval";
-import { ValueAddedModuleData } from "./ValueAddedModuleData";
+import { ValueAddedModuleData } from "../ValueAddedModuleData";
 
 export type EventTicketObject = {
    /**

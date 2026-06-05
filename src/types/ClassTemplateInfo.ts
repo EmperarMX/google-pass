@@ -1,7 +1,7 @@
-import { CardBarcodeSectionDetails } from './CardBarcodeSectionDetails';
-import { CardTemplateOverride } from './CardTemplateOverride';
-import { DetailsTemplateOverride } from './DetailsTemplateOverride';
-import { ListTemplateOverride } from './ListTemplateOverride';
+import { CardBarcodeSectionDetails } from './event/CardBarcodeSectionDetails';
+import { CardTemplateOverride } from './event/CardTemplateOverride';
+import { DetailsTemplateOverride } from './event/DetailsTemplateOverride';
+import { ListTemplateOverride } from './event/ListTemplateOverride';
 
 export type ClassTemplateInfo = {
    /**

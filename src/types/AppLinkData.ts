@@ -1,4 +1,4 @@
-import { AppLinkInfo } from './AppLinkInfo';
+import { AppLinkInfo } from './event/AppLinkInfo';
 import { LocalizedString } from './LocalizedString';
 import { MerchantLocation } from './MerchantLocation';
 import { ValueAddedModuleData } from './ValueAddedModuleData';

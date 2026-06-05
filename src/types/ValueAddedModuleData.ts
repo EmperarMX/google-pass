@@ -1,6 +1,6 @@
 import { Image } from './Image';
 import { LocalizedString } from './LocalizedString';
-import { ModuleViewConstraints } from './ModuleViewConstraints';
+import { ModuleViewConstraints } from './event/ModuleViewConstraints';
 
 export type ValueAddedModuleData = {
    /**

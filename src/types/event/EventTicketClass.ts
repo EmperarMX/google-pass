@@ -1,25 +1,25 @@
-import { AppLinkData } from './AppLinkData';
-import { CallbackOptions } from './CallbackOptions';
-import { ClassTemplateInfo } from './ClassTemplateInfo';
+import { AppLinkData } from '../AppLinkData';
+import { CallbackOptions } from '../CallbackOptions';
+import { ClassTemplateInfo } from '../ClassTemplateInfo';
 import { ConfirmationCodeLabel } from './ConfirmationCodeLabel';
 import { EventDateTime } from './EventDateTime';
 import { EventVenue } from './EventVenue';
 import { GateLabel } from './GateLabel';
-import { Image } from './Image';
-import { ImageModuleData } from './ImageModuleData';
-import { LocalizedString } from './LocalizedString';
-import { Message } from './Message';
-import { MultipleDevicesAndHoldersAllowedStatus } from './MultipleDevicesAndHoldersAllowedStatus';
-import { NotificationSettingsForUpdates } from './NotificationSettingsForUpdates';
-import { Review } from './Review';
-import { ReviewStatus } from './ReviewStatus';
+import { Image } from '../Image';
+import { ImageModuleData } from '../ImageModuleData';
+import { LocalizedString } from '../LocalizedString';
+import { Message } from '../Message';
+import { MultipleDevicesAndHoldersAllowedStatus } from '../MultipleDevicesAndHoldersAllowedStatus';
+import { NotificationSettingsForUpdates } from '../NotificationSettingsForUpdates';
+import { Review } from '../Review';
+import { ReviewStatus } from '../ReviewStatus';
 import { RowLabel } from './RowLabel';
 import { SeatLabel } from './SeatLabel';
 import { SectionLabel } from './SectionLabel';
-import { SecurityAnimation } from './SecurityAnimation';
-import { TextModuleData } from './TextModuleData';
-import { Uri } from './Uri';
-import { ViewUnlockRequirement } from './ViewUnlockRequirement';
+import { SecurityAnimation } from '../SecurityAnimation';
+import { TextModuleData } from '../TextModuleData';
+import { Uri } from '../Uri';
+import { ViewUnlockRequirement } from '../ViewUnlockRequirement';
 
 export interface EventTicketClass {
    /**

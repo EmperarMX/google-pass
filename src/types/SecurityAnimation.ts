@@ -1,4 +1,4 @@
-import { AnimationType } from './AnimationType';
+import { AnimationType } from './event/AnimationType';
 
 export type SecurityAnimation = {
    /***
