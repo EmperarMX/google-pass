@@ -1,4 +1,5 @@
 import { EventTicketClass, EventTicketObject } from './lib/event';
+import { AddMessageRequest } from './types/AddMessageRequest';
 import { Payload } from './types/Payload';
 import jwt from 'jsonwebtoken';
 
@@ -84,7 +85,7 @@ export class GoogleWalletLib {
       }
    };
 
-   async patchClassEvent(issuerId: string, identifier: string, eventTicketClass: EventTicketClass){
+   async patchClassEvent(issuerId: string, identifier: string, eventTicketClass: EventTicketClass): Promise<EventTicketClass>{
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
       try {
          const token = await this.generateTokenAuth();
@@ -120,6 +121,25 @@ export class GoogleWalletLib {
          throw error;
       }
    };
+
+   async pushNotification(issuerId: string, identifier: string, addMessageRequest: AddMessageRequest): Promise<AddMessageRequest>{
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(`${WALLET_API_BASE}/eventTicketObject/${resourceId}/addMessage`, {
+            method: 'POST',
+            headers: {
+               Authorization: `Bearer ${token}`,
+               'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(addMessageRequest),
+         })
+         const result = await response.json();
+         return result as AddMessageRequest;
+      } catch (error) {
+         throw error;
+      }
+   }
 
 
    createPayloadEvent = (
