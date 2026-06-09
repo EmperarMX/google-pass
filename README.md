@@ -18,13 +18,10 @@ A TypeScript library for generating and signing Google Wallet passes. Provides a
   - [Security Animation](#security-animation)
 - [Usage](#usage)
   - [Event Tickets](#event-tickets)
+  - [Loyalty Cards](#loyalty-cards)
 - [API Reference](#api-reference)
-  - [GoogleWalletLib](#googlewallet-lib)
-  - [createClassEvent](#createclassevent)
-  - [createObjectEvent](#createobjectevent)
-  - [createPayloadEvent](#createpayloadevent)
-  - [generateSaveUrl](#generatesaveurl)
 - [Technical Notes](#technical-notes)
+  - [Handling Existing Passes (409 Conflicts)](#handling-existing-passes-409-conflicts)
 - [Roadmap](#roadmap)
 
 ---
@@ -88,7 +85,7 @@ Class
   └── Object
         Represents the individual pass assigned to a user.
         Contains user-specific data: holder name, seat, ticket number,
-        unique barcode, validity period, etc.
+        unique barcode, validity period, points, etc.
 ```
 
 Updating a **class** propagates changes to all associated objects. Updating an **object** affects only that specific pass.
@@ -105,7 +102,7 @@ Two barcode modes are available on pass objects:
 | Security          | Low — vulnerable to screenshots  | High — captured codes expire quickly           |
 | Anti-fraud        | No                               | Yes — server-side secret key required          |
 | Implementation    | Simple                           | Requires TOTP key configuration                |
-| Recommended for   | Low-sensitivity passes           | Event tickets, transit, high-value access      |
+| Recommended for   | Loyalty cards, low-sensitivity passes | Event tickets, transit, high-value access |
 
 > **Important:** `barcode` and `rotatingBarcode` cannot be used simultaneously on the same object. Google will reject the pass or render duplicate barcode elements.
 
@@ -158,230 +155,122 @@ import { GoogleWalletLib } from 'google-pass';
 
 const ISSUER_ID = '1234567890123456789'; // Your Issuer ID from Google Pay & Wallet Console
 
-const wallet = new GoogleWalletLib({
-  iss: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
-  client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
-  private_key: process.env.GOOGLE_PRIVATE_KEY!,
-  issuerName: 'Acme Events',
-});
+const wallet = new GoogleWalletLib({ /* credentials */ });
 
-// Step 1 — Define the event class (shared template)
-const eventClass = wallet.createClassEvent({
+const eventClass = {
   id: `${ISSUER_ID}.festival_2026`,
   issuerName: 'Acme Events',
   reviewStatus: 'UNDER_REVIEW',
   hexBackgroundColor: '#1a1a2e',
-  eventName: {
-    defaultValue: { language: 'en-US', value: 'Annual Developer Summit 2026' },
-  },
-  venue: {
-    name: { defaultValue: { language: 'en-US', value: 'Convention Center' } },
-    address: { defaultValue: { language: 'en-US', value: '123 Main St, San Francisco, CA' } },
-  },
-  dateTime: {
-    start: '2026-09-15T09:00:00-07:00',
-    doorsOpen: '2026-09-15T08:00:00-07:00',
-    doorsOpenLabel: 'DOORS_OPEN',
-  },
-  logo: {
-    sourceUri: { uri: 'https://cdn.example.com/logo.png' },
-    contentDescription: { defaultValue: { language: 'en-US', value: 'Acme Logo' } },
-  },
-  heroImage: {
-    sourceUri: { uri: 'https://cdn.example.com/banner.jpg' },
-    contentDescription: { defaultValue: { language: 'en-US', value: 'Event Banner' } },
-  },
-  securityAnimation: {
-    animationType: 'FOIL_SHIMMER',
-  },
-  // Smart Tap (NFC): enable on the class and declare the authorized redemption issuer.
-  // Requires prior enrollment in the Smart Tap program via the Google Pay & Wallet Console.
-  enableSmartTap: true,
-  redemptionIssuers: [`${ISSUER_ID}`], // Your issuer ID as a string
-});
+  eventName: { defaultValue: { language: 'en-US', value: 'Annual Developer Summit 2026' } }
+};
 
-// Step 2 — Define the individual pass object
-const eventObject = wallet.createObjectEvent({
+const eventObject = {
   id: `${ISSUER_ID}.ticket_001`,
   classId: eventClass.id,
   state: 'ACTIVE',
   ticketHolderName: 'Jane Doe',
-  ticketNumber: 'VIP-001',
-  ticketType: {
-    defaultValue: { language: 'en-US', value: 'VIP Access' },
-  },
-  seatInfo: {
-    seat: { defaultValue: { language: 'en-US', value: '14' } },
-    row: { defaultValue: { language: 'en-US', value: 'B' } },
-    section: { defaultValue: { language: 'en-US', value: 'Main Hall' } },
-    gate: { defaultValue: { language: 'en-US', value: 'South Entrance' } },
-  },
-  rotatingBarcode: {
-    type: 'QR_CODE',
-    alternateText: 'VIP-001',
-    valuePattern: 'TICKET-VIP-001-{totp_value_0}',
-    totpDetails: {
-      periodMillis: '30000',
-      algorithm: 'TOTP_SHA1',
-      parameters: [
-        {
-          key: '3132333435363738393031323334353637383930',
-          valueLength: 6,
-        },
-      ],
-    },
-  },
-  // Smart Tap (NFC): the value transmitted to the terminal when the user taps.
-  // Only ASCII characters are supported. Must match what the terminal expects.
-  smartTapRedemptionValue: 'VIP-001',
-  // Optional: restrict NFC behavior at the OS level.
-  // 'BLOCK_PAYMENT' prevents the pass from responding to payment readers.
-  // 'BLOCK_CLOSED_LOOP_TRANSIT' prevents transit reader interactions.
-  // Omit passConstraints entirely if no NFC restrictions are needed.
-  passConstraints: {
-    nfcConstraint: ['BLOCK_PAYMENT'],
-  },
-});
+  barcode: { type: 'QR_CODE', value: 'TICKET-001' }
+};
 
-// Step 3 — Build the payload and generate the save URL
-const unixTime = Math.floor(Date.now() / 1000);
+// 1. Create Class (Handle if it already exists)
+let cResult: any = await wallet.createClassEvent(eventClass);
+if (cResult.error) cResult = await wallet.patchClassEvent(ISSUER_ID, 'festival_2026', eventClass);
 
-const payload = wallet.createPayloadEvent(
-  unixTime,
-  ['https://www.example.com'],
-  eventClass,
-  eventObject
-);
+// 2. Create Object (Handle if it already exists)
+let oResult: any = await wallet.createObjectEvent(eventObject);
+if (oResult.error) oResult = await wallet.patchObjectEvent(ISSUER_ID, 'ticket_001', eventObject);
 
+// 3. Build the payload and generate the save URL
+const payload = wallet.createPayloadEvent(Math.floor(Date.now() / 1000), ['https://www.example.com'], eventClass, eventObject);
 const saveUrl = wallet.generateSaveUrl(payload);
 // → https://pay.google.com/gp/v/save/<signed_jwt>
+```
+
+### Loyalty Cards
+
+Loyalty cards are ideal for representing store programs, coffee clubs, and badge collections. 
+
+```typescript
+const loyaltyClass = {
+  id: `${ISSUER_ID}.coffee_club`,
+  issuerName: 'Acme Cafe',
+  reviewStatus: 'UNDER_REVIEW',
+  programName: 'Coffee Lovers',
+  hexBackgroundColor: '#6F4E37',
+  programLogo: { sourceUri: { uri: 'https://example.com/logo.png' } }
+};
+
+const loyaltyObject = {
+  id: `${ISSUER_ID}.loyalty_001`,
+  classId: loyaltyClass.id,
+  state: 'ACTIVE',
+  accountName: 'Jane Doe',
+  accountId: 'C-98765',
+  loyaltyPoints: {
+     label: 'Visits',
+     balance: { string: '8 / 10' }
+  },
+  barcode: { type: 'QR_CODE', value: 'C-98765' }
+};
+
+let cResult: any = await wallet.createClassLoyalty(loyaltyClass);
+if (cResult.error) cResult = await wallet.patchClassLoyalty(ISSUER_ID, 'coffee_club', loyaltyClass);
+
+let oResult: any = await wallet.createObjectLoyalty(loyaltyObject);
+if (oResult.error) oResult = await wallet.patchObjectLoyalty(ISSUER_ID, 'loyalty_001', loyaltyObject);
+
+const payload = wallet.createPayloadLoyalty(Math.floor(Date.now() / 1000), ['https://www.example.com'], loyaltyClass, loyaltyObject);
+const saveUrl = wallet.generateSaveUrl(payload);
 ```
 
 ---
 
 ## API Reference
 
-### `GoogleWalletLib`
+### Core Methods
+
+| Method | Description |
+| --- | --- |
+| `createClassEvent(class: EventTicketClass)` | Creates a new Event Class |
+| `createObjectEvent(object: EventTicketObject)` | Creates a new Event Object |
+| `getClassEvent(issuerId, identifier)` | Retrieves an existing Event Class |
+| `getObjectEvent(issuerId, identifier)` | Retrieves an existing Event Object |
+| `patchClassEvent(issuerId, identifier, class)` | Updates an existing Event Class |
+| `patchObjectEvent(issuerId, identifier, object)`| Updates an existing Event Object |
+| `createPayloadEvent(...)` | Builds the JWT payload for Event |
+
+*All the methods above exist similarly for **Loyalty Cards** (e.g., `createClassLoyalty`, `createObjectLoyalty`, `patchObjectLoyalty`).*
+
+### Push Notifications
+You can trigger push notifications when updating a pass by using the `pushNotification` method:
 
 ```typescript
-new GoogleWalletLib(credentials: Credentials): GoogleWalletLib
+await wallet.pushNotification(ISSUER_ID, 'ticket_001', 'eventTicketObject', {
+  message: { body: 'Your seat has been upgraded!', id: `msg_${Date.now()}`, messageType: 'TEXT' }
+});
 ```
-
-Creates a new instance of the library. All methods on the instance use the provided credentials to sign JWTs.
-
----
-
-### `createClassEvent`
-
-```typescript
-wallet.createClassEvent(eventTicketClass: EventTicketClass): EventTicketClass
-```
-
-Constructs and returns an `EventTicketClass` object. This represents the shared template for all tickets of a given event.
-
-**Required fields:**
-
-| Field          | Type           | Description                                                       |
-| -------------- | -------------- | ----------------------------------------------------------------- |
-| `id`           | `string`       | Unique class identifier. Format: `{issuerID}.{your_identifier}`   |
-| `issuerName`   | `string`       | Issuer display name. Recommended maximum: 20 characters           |
-| `reviewStatus` | `ReviewStatus` | `'UNDER_REVIEW'` for production, `'DRAFT'` during development     |
-| `eventName`    | `LocalizedString` | Localized name of the event                                    |
-
-**Notable optional fields:**
-
-| Field               | Type                | Description                                                      |
-| ------------------- | ------------------- | ---------------------------------------------------------------- |
-| `venue`             | `EventVenue`        | Venue name and address                                           |
-| `dateTime`          | `EventDateTime`     | Event start, doors open, and end times                           |
-| `logo`              | `Image`             | Logo displayed in the top-left of the pass card                  |
-| `heroImage`         | `Image`             | Full-width banner image at the top of the pass                   |
-| `hexBackgroundColor`| `string`            | Background color in `#rrggbb` or `#rgb` format                   |
-| `securityAnimation` | `SecurityAnimation` | Enables the `FOIL_SHIMMER` animated border                       |
-| `finePrint`         | `LocalizedString`   | Terms and conditions text                                        |
-| `textModulesData`   | `TextModuleData[]`  | Additional text blocks visible on the pass detail view (max 10)  |
-
-**`reviewStatus` values:**
-
-| Value           | When to use                                                                            |
-| --------------- | -------------------------------------------------------------------------------------- |
-| `'DRAFT'`       | During development. A draft class cannot be used to create pass objects.               |
-| `'UNDER_REVIEW'`| When the class is ready for production. Google approves it automatically.              |
-
----
-
-### `createObjectEvent`
-
-```typescript
-wallet.createObjectEvent(eventTicketObject: EventTicketObject): EventTicketObject
-```
-
-Constructs and returns an `EventTicketObject` — the individual pass assigned to a specific user.
-
-**Required fields:**
-
-| Field     | Type     | Description                                                          |
-| --------- | -------- | -------------------------------------------------------------------- |
-| `id`      | `string` | Unique object identifier. Format: `{issuerID}.{your_identifier}`     |
-| `classId` | `string` | The `id` of the parent class this object belongs to                  |
-| `state`   | `State`  | Pass state: `'ACTIVE'`, `'INACTIVE'`, or `'EXPIRED'`                 |
-
-**Notable optional fields:**
-
-| Field               | Type              | Description                                                             |
-| ------------------- | ----------------- | ----------------------------------------------------------------------- |
-| `ticketHolderName`  | `string`          | Name of the pass holder                                                 |
-| `ticketNumber`      | `string`          | Unique ticket identifier within your system                             |
-| `ticketType`        | `LocalizedString` | Ticket category: "VIP", "General Admission", etc.                       |
-| `seatInfo`          | `EventSeat`       | Seat, row, section, and gate information                                |
-| `rotatingBarcode`   | `RotatingBarcode` | TOTP-based dynamic QR code. Do not combine with `barcode`.              |
-| `barcode`           | `Barcode`         | Static barcode. Do not combine with `rotatingBarcode`.                  |
-| `validTimeInterval` | `TimeInterval`    | Time window during which the pass is considered valid                   |
-| `hexBackgroundColor`| `string`          | Overrides the class-level background color for this specific object     |
-| `textModulesData`   | `TextModuleData[]`| Additional informational text shown in the pass detail view             |
-
----
-
-### `createPayloadEvent`
-
-```typescript
-wallet.createPayloadEvent(
-  unixTime: number,
-  origins: string[],
-  eventClass: EventTicketClass,
-  eventObject: EventTicketObject
-): Payload
-```
-
-Assembles the JWT payload containing the class and object definitions.
-
-| Parameter     | Type                | Description                                                                       |
-| ------------- | ------------------- | --------------------------------------------------------------------------------- |
-| `unixTime`    | `number`            | Token issuance time in **seconds** — use `Math.floor(Date.now() / 1000)`          |
-| `origins`     | `string[]`          | Authorized domains allowed to trigger the save flow (e.g. `['https://example.com']`) |
-| `eventClass`  | `EventTicketClass`  | The class returned by `createClassEvent`                                          |
-| `eventObject` | `EventTicketObject` | The object returned by `createObjectEvent`                                        |
-
----
-
-### `generateSaveUrl`
-
-```typescript
-wallet.generateSaveUrl(payload: Payload): string
-```
-
-Signs the payload using the service account private key with the `RS256` algorithm and returns the Google Wallet save URL.
-
-```typescript
-const saveUrl = wallet.generateSaveUrl(payload);
-// → "https://pay.google.com/gp/v/save/<signed_jwt>"
-```
-
-This URL can be used directly in an `<a href>` element or passed to the official Google Wallet button SDK.
+Valid targets for the `type` property are: `'loyaltyClass' | 'loyaltyObject' | 'eventTicketClass' | 'eventTicketObject'`.
 
 ---
 
 ## Technical Notes
+
+### Handling Existing Passes (409 Conflicts)
+
+When calling `createClassEvent` or `createObjectEvent` (or their Loyalty equivalents), if the ID already exists in your issuer account, the Google Wallet API returns an HTTP 409 Conflict. 
+
+By design, this library **does not throw a JavaScript error** when the `fetch` API call receives a 400-level HTTP response; instead, it returns the error JSON block generated by Google. 
+
+To handle this smoothly, you must check for `.error` on the result and fallback to patching:
+
+```typescript
+let classResult: any = await wallet.createClassLoyalty(myLoyaltyClass);
+if (classResult.error) {
+  // Already exists, update it instead
+  classResult = await wallet.patchClassLoyalty(ISSUER_ID, 'my_identifier', myLoyaltyClass);
+}
+```
 
 ### `iat` must be in seconds
 
@@ -424,7 +313,6 @@ When updating an already-approved class, always set `reviewStatus: 'UNDER_REVIEW
 The following pass types are planned for future releases:
 
 - Generic passes
-- Loyalty cards
 - Offers and coupons
 - Gift cards
 - Transit passes
@@ -432,6 +320,14 @@ The following pass types are planned for future releases:
 
 ---
 
+## Author
+
+**Eduardo Tovar**  
+Created and maintained with ❤️ for the Google Wallet integration ecosystem.
+
+---
+
 ## License
 
 [ISC](./LICENSE)
+
