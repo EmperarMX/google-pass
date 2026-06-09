@@ -1,6 +1,6 @@
-import { BarcodeRenderEncoding } from "./BarcodeRenderEncoding";
-import { BarcodeType } from "./BarcodeType";
-import { LocalizedString } from "../LocalizedString";
+import { BarcodeRenderEncoding } from "./event/BarcodeRenderEncoding";
+import { BarcodeType } from "./event/BarcodeType";
+import { LocalizedString } from "./LocalizedString";
 
 export type Barcode = {
    /**

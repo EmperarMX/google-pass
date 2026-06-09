@@ -1,6 +1,6 @@
 import { EventTicketClass, EventTicketObject } from './lib/event';
-import { AddMessageRequest } from './types/AddMessageRequest';
-import { Payload } from './types/Payload';
+import { AddMessageRequest } from './types/event/AddMessageRequest';
+import { Payload } from './types/event/Payload';
 import jwt from 'jsonwebtoken';
 
 const GOOGLE_TOKEN_URL  = 'https://oauth2.googleapis.com/token';
@@ -9,8 +9,8 @@ const WALLET_API_BASE   = 'https://walletobjects.googleapis.com/walletobjects/v1
 
 export interface Credentials {
    iss: string;
-   private_key: string;
    issuerName: string;
+   private_key: string;
    client_email: string;
 }
 

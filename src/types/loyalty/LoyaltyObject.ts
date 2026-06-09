@@ -1,68 +1,48 @@
-import { AppLinkData } from "../AppLinkData";
-import { Barcode } from "../Barcode";
-import { EventReservationInfo } from "./EventReservationInfo";
-import { EventSeat } from "./EventSeat";
-import { EventTicketClass } from "./EventTicketClass";
-import { GroupingInfo } from "../GroupingInfo";
-import { Image } from "../Image";
-import { ImageModuleData } from "../ImageModuleData";
-import { LatLongPoint } from "./LatLongPoint";
-import { LinksModuleData } from "../LinksModuleData";
-import { LocalizedString } from "../LocalizedString";
-import { MerchantLocation } from "../MerchantLocation";
-import { Message } from "../Message";
-import { Money } from "../Money";
-import { NotificationSettingsForUpdates } from "../NotificationSettingsForUpdates";
-import { PassConstraints } from "../PassConstraints";
-import { RotatingBarcode } from "../RotatingBarcode";
-import { SaveRestrictions } from "../SaveRestrictions";
-import { State } from "../State";
-import { TextModuleData } from "../TextModuleData";
-import { TimeInterval } from "../TimeInterval";
-import { ValueAddedModuleData } from "../ValueAddedModuleData";
+import { AppLinkData } from '../AppLinkData';
+import { Barcode } from '../Barcode';
+import { GroupingInfo } from '../GroupingInfo';
+import { Image } from '../Image';
+import { ImageModuleData } from '../ImageModuleData';
+import { LinksModuleData } from '../LinksModuleData';
+import { MerchantLocation } from '../MerchantLocation';
+import { Message } from '../Message';
+import { NotificationSettingsForUpdates } from '../NotificationSettingsForUpdates';
+import { PassConstraints } from '../PassConstraints';
+import { RotatingBarcode } from '../RotatingBarcode';
+import { SaveRestrictions } from '../SaveRestrictions';
+import { State } from '../State';
+import { TextModuleData } from '../TextModuleData';
+import { TimeInterval } from '../TimeInterval';
+import { ValueAddedModuleData } from '../ValueAddedModuleData';
+import { LoyaltyClass } from './LoyaltyClass';
+import { LoyaltyPoints } from './LoyaltyPoints';
 
-export type EventTicketObject = {
+export type LoyaltyObject = {
    /**
     * A copy of the inherited fields of the parent class. These fields are retrieved during a GET.
     */
-   classReference?: EventTicketClass;
+   classReference?: LoyaltyClass;
    /**
-    * Seating details for this ticket.
+    * The loyalty account holder name, such as "John Smith." Recommended maximum length is 20 characters to ensure full string is displayed on smaller screens.
     */
-   seatInfo?: EventSeat;
+   accountName?: string;
    /**
-    * Reservation details for this ticket. This is expected to be shared amongst all tickets that were purchased in the same order.
+    * The loyalty account identifier. Recommended maximum length is 20 characters.
     */
-   reservationInfo?: EventReservationInfo;
+   accountId?: string;
    /**
-    * Name of the ticket holder, if the ticket is assigned to a person. E.g. "John Doe" or "Jane Doe".
+    * The loyalty reward points label, balance, and type.
     */
-   ticketHolderName?: string;
+   loyaltyPoints?: LoyaltyPoints;
    /**
-    * The number of the ticket. This can be a unique identifier across all tickets in an issuer's system, all tickets for the event (e.g. XYZ1234512345), or all tickets in the order (1, 2, 3, etc.).
-    */
-   ticketNumber?: string;
-   /**
-    * The type of the ticket, such as "Adult" or "Child", or "VIP" or "Standard".
-    */
-   ticketType?: LocalizedString;
-   /**
-    * The face value of the ticket, matching what would be printed on a physical version of the ticket.
-    */
-   faceValue?: Money;
-   /**
-    * Information that controls how passes are grouped together.
-    */
-   groupingInfo?: GroupingInfo;
-   /**
-    * A list of offer objects linked to this event ticket. The offer objects must already exist.
+    * A list of offer objects linked to this loyalty card. The offer objects must already exist.
     * Offer object IDs should follow the format issuer ID.identifier where the former is issued by Google and latter is chosen by you.
     */
    linkedOfferIds?: string[];
    /**
-    * The background color for the card. If not set the dominant color of the hero image is used, and if no hero image is set, the dominant color of the logo is used. The format is #rrggbb where rrggbb is a hex RGB triplet, such as #ffcc00. You can also use the shorthand version of the RGB triplet which is #rgb, such as #fc0.
+    * The secondary loyalty reward points label, balance, and type. Shown in addition to the primary loyalty points.
     */
-   hexBackgroundColor?: string;
+   secondaryLoyaltyPoints?: LoyaltyPoints;
    /**
     * Required. The unique identifier for an object. This ID must be unique across all objects from an issuer. This value should follow the format issuer ID.identifier where the former is issued by Google and latter is chosen by you. The unique identifier should only include alphanumeric characters, '.', '_', or '-'.
     */
@@ -88,13 +68,13 @@ export type EventTicketObject = {
     * The time period this object will be active and object can be used. An object's state will be changed to expired when this time period has passed.
     */
    validTimeInterval?: TimeInterval;
-   locations?: LatLongPoint[];
    /**
     * Indicates if the object has users. This field is set by the platform.
     */
    hasUsers?: boolean;
    /**
     * The value that will be transmitted to a Smart Tap certified terminal over NFC for this object. The class level fields enableSmartTap and redemptionIssuers must also be set up correctly in order for the pass to support Smart Tap. Only ASCII characters are supported.
+    * If this value is not set but the class level fields enableSmartTap and redemptionIssuers are set up correctly, the barcode.value or the accountId fields are used as fallback if present.
     */
    smartTapRedemptionValue?: string;
    /**
@@ -102,7 +82,7 @@ export type EventTicketObject = {
     */
    hasLinkedDevice?: boolean;
    /**
-    *  Indicates if notifications should explicitly be suppressed. If this field is set to true, regardless of the messages field, expiration notifications to the user will be suppressed. By default, this field is set to false.
+    * Indicates if notifications should explicitly be suppressed. If this field is set to true, regardless of the messages field, expiration notifications to the user will be suppressed. By default, this field is set to false.
     * Currently, this can only be set for offers.
     */
    disableExpirationNotification?: boolean;
@@ -131,6 +111,10 @@ export type EventTicketObject = {
     */
    heroImage?: Image;
    /**
+    * Information that controls how passes are grouped together.
+    */
+   groupingInfo?: GroupingInfo;
+   /**
     * Pass constraints for the object. Includes limiting NFC and screenshot behaviors.
     */
    passConstraints?: PassConstraints;
@@ -139,7 +123,7 @@ export type EventTicketObject = {
     */
    saveRestrictions?: SaveRestrictions;
    /**
-    * linkedObjectIds are a list of other objects such as event ticket, loyalty, offer, generic, giftcard, transit and boarding pass that should be automatically attached to this event ticket object. If a user had saved this event ticket, then these linkedObjectIds would be automatically pushed to the user's wallet (unless they turned off the setting to receive such linked passes).
+    * linkedObjectIds are a list of other objects such as event ticket, loyalty, offer, generic, giftcard, transit and boarding pass that should be automatically attached to this loyalty object. If a user had saved this loyalty card, then these linkedObjectIds would be automatically pushed to the user's wallet (unless they turned off the setting to receive such linked passes).
     * Make sure that objects present in linkedObjectIds are already inserted - if not, calls would fail. Once linked, the linked objects cannot be unlinked. You cannot link objects belonging to another issuer. There is a limit to the number of objects that can be linked to a single object. After the limit is reached, new linked objects in the call will be ignored silently.
     * Object IDs should follow the format issuer ID.identifier where the former is issued by Google and the latter is chosen by you.
     */
@@ -156,4 +140,4 @@ export type EventTicketObject = {
     * Merchant locations. There is a maximum of ten on the object. Any additional MerchantLocations added beyond the 10 will be rejected. These locations will trigger a notification when a user enters within a Google-set radius of the point. This field replaces the deprecated LatLongPoints.
     */
    merchantLocations?: MerchantLocation[];
-}
+};

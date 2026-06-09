@@ -1,5 +1,5 @@
-import { NfcConstraint } from "./NfcConstraint";
-import { ScreenshotEligibility } from "./ScreenshotEligibility";
+import { NfcConstraint } from "./event/NfcConstraint";
+import { ScreenshotEligibility } from "./event/ScreenshotEligibility";
 
 export type PassConstraints = {
    /**

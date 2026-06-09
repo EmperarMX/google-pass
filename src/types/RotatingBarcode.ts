@@ -1,8 +1,8 @@
-import { BarcodeRenderEncoding } from "./BarcodeRenderEncoding";
-import { BarcodeType } from "./BarcodeType";
-import { LocalizedString } from "../LocalizedString";
-import { RotatingBarcodeValues } from "./RotatingBarcodeValues";
-import { TotpDetails } from "./TotpDetails";
+import { BarcodeRenderEncoding } from "./event/BarcodeRenderEncoding";
+import { BarcodeType } from "./event/BarcodeType";
+import { LocalizedString } from "./LocalizedString";
+import { RotatingBarcodeValues } from "./event/RotatingBarcodeValues";
+import { TotpDetails } from "./event/TotpDetails";
 
 export type RotatingBarcode = {
    /**

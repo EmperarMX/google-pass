@@ -1,4 +1,4 @@
-import { DateTime } from './DateTime';
+import { DateTime } from './event/DateTime';
 
 export type TimeInterval = {
    /**
