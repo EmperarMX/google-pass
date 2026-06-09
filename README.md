@@ -320,13 +320,6 @@ The following pass types are planned for future releases:
 
 ---
 
-## Author
-
-**Eduardo Tovar**  
-Created and maintained with ❤️ for the Google Wallet integration ecosystem.
-
----
-
 ## License
 
 [ISC](./LICENSE)
