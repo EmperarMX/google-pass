@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sanchezand/google-pass.git"
+    "url": "git+https://github.com/EmperarMX/google-pass.git"
   },
   "author": "Eduardo Tovar",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sanchezand/google-pass/issues"
+    "url": "https://github.com/EmperarMX/google-pass/issues"
   },
-  "homepage": "https://github.com/sanchezand/google-pass#readme",
+  "homepage": "https://github.com/EmperarMX/google-pass#readme",
   "dependencies": {
     "jsonwebtoken": "^9.0.3"
   },
