@@ -1,5 +1,6 @@
-import { EventTicketClass } from '../types/EventTicketClass';
-import { EventTicketObject } from '../types/EventTicketObject';
+import { EventTicketClass } from "../types/event/EventTicketClass";
+import { EventTicketObject } from "../types/event/EventTicketObject";
+
 
 
 export type { EventTicketClass, EventTicketObject }

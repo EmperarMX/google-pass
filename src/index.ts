@@ -1,5 +1,6 @@
 import { EventTicketClass, EventTicketObject } from './lib/event';
 import { AddMessageRequest } from './types/event/AddMessageRequest';
+import { LoyaltyClass, LoyaltyObject } from './lib/loyalty';
 import { Payload } from './types/event/Payload';
 import jwt from 'jsonwebtoken';
 
@@ -43,14 +44,16 @@ export class GoogleWalletLib {
                assertion,
             }),
          });
-         const result = await response.json() as { access_token: string };
+         const result = (await response.json()) as { access_token: string };
          return result.access_token;
       } catch (error) {
          throw error;
       }
    }
 
-   async createClassEvent(eventTicketClass: EventTicketClass): Promise<EventTicketClass>{
+   async createClassEvent(
+      eventTicketClass: EventTicketClass
+   ): Promise<EventTicketClass> {
       try {
          const token = await this.generateTokenAuth();
          const response = await fetch(`${WALLET_API_BASE}/eventTicketClass`, {
@@ -60,43 +63,7 @@ export class GoogleWalletLib {
                'Content-Type': 'application/json',
             },
             body: JSON.stringify(eventTicketClass),
-         })
-         const result = await response.json();
-         return result as EventTicketClass;
-      } catch (error) {
-         throw error;
-      }
-   };
-   
-   async getClassEvent(issuerId: string, identifier: string){
-      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(`${WALLET_API_BASE}/eventTicketClass/${resourceId}`, {
-            headers: {
-               Authorization: `Bearer ${token}`,
-               'Content-Type': 'application/json',
-            },
-         })
-         const result = await response.json();
-         return result as EventTicketClass;
-      } catch (error) {
-         throw error;
-      }
-   };
-
-   async patchClassEvent(issuerId: string, identifier: string, eventTicketClass: EventTicketClass): Promise<EventTicketClass>{
-      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(`${WALLET_API_BASE}/eventTicketClass/${resourceId}`, {
-            method: 'PATCH',
-            headers: {
-               Authorization: `Bearer ${token}`,
-               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(eventTicketClass),
-         })
+         });
          const result = await response.json();
          return result as EventTicketClass;
       } catch (error) {
@@ -104,7 +71,125 @@ export class GoogleWalletLib {
       }
    }
 
-   async createObjectEvent(eventTicketObject: EventTicketObject): Promise<EventTicketObject>{
+   async createClassLoyalty(loyaltyClass: LoyaltyClass): Promise<LoyaltyClass> {
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(`${WALLET_API_BASE}/loyaltyClass`, {
+            method: 'POST',
+            headers: {
+               Authorization: `Bearer ${token}`,
+               'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loyaltyClass),
+         });
+         const result = await response.json();
+         return result as LoyaltyClass;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async getClassEvent(
+      issuerId: string,
+      identifier: string
+   ): Promise<EventTicketClass> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/eventTicketClass/${resourceId}`,
+            {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            }
+         );
+         const result = await response.json();
+         return result as EventTicketClass;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async getClassLoyalty(
+      issuerId: string,
+      identifier: string
+   ): Promise<LoyaltyClass> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/loyaltyClass/${resourceId}`,
+            {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            }
+         );
+         const result = await response.json();
+         return result as LoyaltyClass;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async patchClassEvent(
+      issuerId: string,
+      identifier: string,
+      eventTicketClass: EventTicketClass
+   ): Promise<EventTicketClass> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/eventTicketClass/${resourceId}`,
+            {
+               method: 'PATCH',
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(eventTicketClass),
+            }
+         );
+         const result = await response.json();
+         return result as EventTicketClass;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async patchClassLoyalty(
+      issuerId: string,
+      identifier: string,
+      loyaltyClass: LoyaltyClass
+   ): Promise<LoyaltyClass> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/loyaltyClass/${resourceId}`,
+            {
+               method: 'PATCH',
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(loyaltyClass),
+            }
+         );
+         const result = await response.json();
+         return result as LoyaltyClass;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async createObjectEvent(
+      eventTicketObject: EventTicketObject
+   ): Promise<EventTicketObject> {
       try {
          const token = await this.generateTokenAuth();
          const response = await fetch(`${WALLET_API_BASE}/eventTicketObject`, {
@@ -114,33 +199,162 @@ export class GoogleWalletLib {
                'Content-Type': 'application/json',
             },
             body: JSON.stringify(eventTicketObject),
-         })
+         });
          const result = await response.json();
          return result as EventTicketObject;
       } catch (error) {
          throw error;
       }
-   };
+   }
 
-   async pushNotification(issuerId: string, identifier: string, addMessageRequest: AddMessageRequest): Promise<AddMessageRequest>{
-      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+   async createObjectLoyalty(
+      loyaltyObject: LoyaltyObject
+   ): Promise<LoyaltyObject> {
       try {
          const token = await this.generateTokenAuth();
-         const response = await fetch(`${WALLET_API_BASE}/eventTicketObject/${resourceId}/addMessage`, {
+         const response = await fetch(`${WALLET_API_BASE}/loyaltyObject`, {
             method: 'POST',
             headers: {
                Authorization: `Bearer ${token}`,
                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(addMessageRequest),
-         })
+            body: JSON.stringify(loyaltyObject),
+         });
+         const result = await response.json();
+         return result as LoyaltyObject;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async getObjectEvent(
+      issuerId: string,
+      identifier: string
+   ): Promise<EventTicketObject> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/eventTicketObject/${resourceId}`,
+            {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            }
+         );
+         const result = await response.json();
+         return result as EventTicketObject;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async getObjectLoyalty(
+      issuerId: string,
+      identifier: string
+   ): Promise<LoyaltyObject> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/loyaltyObject/${resourceId}`,
+            {
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+            }
+         );
+         const result = await response.json();
+         return result as LoyaltyObject;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async patchObjectEvent(
+      issuerId: string,
+      identifier: string,
+      eventTicketObject: EventTicketObject
+   ): Promise<EventTicketObject> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/eventTicketObject/${resourceId}`,
+            {
+               method: 'PATCH',
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(eventTicketObject),
+            }
+         );
+         const result = await response.json();
+         return result as EventTicketObject;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async patchObjectLoyalty(
+      issuerId: string,
+      identifier: string,
+      loyaltyObject: LoyaltyObject
+   ): Promise<LoyaltyObject> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/loyaltyObject/${resourceId}`,
+            {
+               method: 'PATCH',
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(loyaltyObject),
+            }
+         );
+         const result = await response.json();
+         return result as LoyaltyObject;
+      } catch (error) {
+         throw error;
+      }
+   }
+
+   async pushNotification(
+      issuerId: string,
+      identifier: string,
+      type:
+         | 'loyaltyClass'
+         | 'loyaltyObject'
+         | 'eventTicketClass'
+         | 'eventTicketObject',
+      addMessageRequest: AddMessageRequest
+   ): Promise<AddMessageRequest> {
+      const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
+      try {
+         const token = await this.generateTokenAuth();
+         const response = await fetch(
+            `${WALLET_API_BASE}/${type}/${resourceId}/addMessage`,
+            {
+               method: 'POST',
+               headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+               },
+               body: JSON.stringify(addMessageRequest),
+            }
+         );
          const result = await response.json();
          return result as AddMessageRequest;
       } catch (error) {
          throw error;
       }
    }
-
 
    createPayloadEvent = (
       unixTime: number,
@@ -160,6 +374,28 @@ export class GoogleWalletLib {
          payload: {
             eventTicketClasses: [eventTicketClass],
             eventTicketObjects: [eventTicketObjects],
+         },
+      };
+   };
+
+   createPayloadLoyalty = (
+      unixTime: number,
+      origins: string[],
+      loyaltyClass: LoyaltyClass,
+      loyaltyObjects: LoyaltyObject
+   ): Payload<{
+      loyaltyClasses: LoyaltyClass[];
+      loyaltyObjects: LoyaltyObject[];
+   }> => {
+      return {
+         iss: this.credentials.client_email,
+         aud: 'google',
+         typ: 'savetowallet',
+         iat: unixTime,
+         origins,
+         payload: {
+            loyaltyClasses: [loyaltyClass],
+            loyaltyObjects: [loyaltyObjects],
          },
       };
    };
