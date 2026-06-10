@@ -2,6 +2,9 @@
   "name": "google-pass",
   "version": "1.0.0",
   "description": "NodeJS wrapper for Google Wallet Pass creation",
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
