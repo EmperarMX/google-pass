@@ -1,6 +1,6 @@
 {
   "name": "google-pass",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NodeJS wrapper for Google Wallet Pass creation",
   "files": [
     "dist"
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/EmperarMX/google-pass.git"
   },
-  "author": "Eduardo Tovar",
+  "author": "Emperar",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/EmperarMX/google-pass/issues"
