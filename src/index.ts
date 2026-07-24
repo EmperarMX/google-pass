@@ -4,6 +4,11 @@ import { LoyaltyClass, LoyaltyObject } from './lib/loyalty';
 import { Payload } from './types/event/Payload';
 import jwt from 'jsonwebtoken';
 
+export * from './lib/event';
+export * from './lib/loyalty';
+export * from './types/event/AddMessageRequest';
+export * from './types/event/Payload';
+
 const GOOGLE_TOKEN_URL  = 'https://oauth2.googleapis.com/token';
 const GOOGLE_AUTH_SCOPE = 'https://www.googleapis.com/auth/wallet_object.issuer';
 const WALLET_API_BASE   = 'https://walletobjects.googleapis.com/walletobjects/v1';
@@ -14,6 +19,29 @@ export interface Credentials {
    private_key: string;
    client_email: string;
 }
+
+export interface GoogleWalletErrorDetail {
+   message?: string;
+   domain?: string;
+   reason?: string;
+   [key: string]: any;
+}
+
+export interface GoogleWalletError {
+   code?: number;
+   message?: string;
+   status?: string;
+   errors?: GoogleWalletErrorDetail[];
+   [key: string]: any;
+}
+
+export interface GoogleWalletErrorResponse {
+   error: GoogleWalletError;
+}
+
+export type GoogleWalletResponse<T> =
+   | { error: false; data: T; message?: string }
+   | { error: true; data: GoogleWalletErrorResponse; message: string };
 
 export class GoogleWalletLib {
    private credentials: Credentials;
@@ -51,278 +79,204 @@ export class GoogleWalletLib {
       }
    }
 
-   async createClassEvent(
-      eventTicketClass: EventTicketClass
-   ): Promise<EventTicketClass> {
+   private async handleRequest<T>(
+      url: string,
+      options: RequestInit,
+      fallbackErrorMsg: string
+   ): Promise<GoogleWalletResponse<T>> {
       try {
          const token = await this.generateTokenAuth();
-         const response = await fetch(`${WALLET_API_BASE}/eventTicketClass`, {
-            method: 'POST',
+         const response = await fetch(url, {
+            ...options,
             headers: {
                Authorization: `Bearer ${token}`,
                'Content-Type': 'application/json',
+               ...(options.headers || {}),
             },
-            body: JSON.stringify(eventTicketClass),
          });
-         const result = await response.json();
-         return result as EventTicketClass;
-      } catch (error) {
-         throw error;
+         const result = (await response.json()) as any;
+         if (!response.ok || (result && result.error)) {
+            return {
+               error: true,
+               data: (result && result.error ? result : { error: { message: fallbackErrorMsg } }) as GoogleWalletErrorResponse,
+               message: result?.error?.message || fallbackErrorMsg,
+            };
+         }
+         return {
+            error: false,
+            data: result as T,
+         };
+      } catch (error: any) {
+         return {
+            error: true,
+            data: { error: { message: error?.message || fallbackErrorMsg } },
+            message: error?.message || fallbackErrorMsg,
+         };
       }
    }
 
-   async createClassLoyalty(loyaltyClass: LoyaltyClass): Promise<LoyaltyClass> {
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(`${WALLET_API_BASE}/loyaltyClass`, {
+   async createClassEvent(
+      eventTicketClass: EventTicketClass
+   ): Promise<GoogleWalletResponse<EventTicketClass>> {
+      return this.handleRequest<EventTicketClass>(
+         `${WALLET_API_BASE}/eventTicketClass`,
+         {
             method: 'POST',
-            headers: {
-               Authorization: `Bearer ${token}`,
-               'Content-Type': 'application/json',
-            },
+            body: JSON.stringify(eventTicketClass),
+         },
+         'Error creating event ticket class'
+      );
+   }
+
+   async createClassLoyalty(
+      loyaltyClass: LoyaltyClass
+   ): Promise<GoogleWalletResponse<LoyaltyClass>> {
+      return this.handleRequest<LoyaltyClass>(
+         `${WALLET_API_BASE}/loyaltyClass`,
+         {
+            method: 'POST',
             body: JSON.stringify(loyaltyClass),
-         });
-         const result = await response.json();
-         return result as LoyaltyClass;
-      } catch (error) {
-         throw error;
-      }
+         },
+         'Error creating loyalty class'
+      );
    }
 
    async getClassEvent(
       issuerId: string,
       identifier: string
-   ): Promise<EventTicketClass> {
+   ): Promise<GoogleWalletResponse<EventTicketClass>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/eventTicketClass/${resourceId}`,
-            {
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-            }
-         );
-         const result = await response.json();
-         return result as EventTicketClass;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<EventTicketClass>(
+         `${WALLET_API_BASE}/eventTicketClass/${resourceId}`,
+         { method: 'GET' },
+         'Error getting event ticket class'
+      );
    }
 
    async getClassLoyalty(
       issuerId: string,
       identifier: string
-   ): Promise<LoyaltyClass> {
+   ): Promise<GoogleWalletResponse<LoyaltyClass>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/loyaltyClass/${resourceId}`,
-            {
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-            }
-         );
-         const result = await response.json();
-         return result as LoyaltyClass;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<LoyaltyClass>(
+         `${WALLET_API_BASE}/loyaltyClass/${resourceId}`,
+         { method: 'GET' },
+         'Error getting loyalty class'
+      );
    }
 
    async patchClassEvent(
       issuerId: string,
       identifier: string,
       eventTicketClass: EventTicketClass
-   ): Promise<EventTicketClass> {
+   ): Promise<GoogleWalletResponse<EventTicketClass>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/eventTicketClass/${resourceId}`,
-            {
-               method: 'PATCH',
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(eventTicketClass),
-            }
-         );
-         const result = await response.json();
-         return result as EventTicketClass;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<EventTicketClass>(
+         `${WALLET_API_BASE}/eventTicketClass/${resourceId}`,
+         {
+            method: 'PATCH',
+            body: JSON.stringify(eventTicketClass),
+         },
+         'Error patching event ticket class'
+      );
    }
 
    async patchClassLoyalty(
       issuerId: string,
       identifier: string,
       loyaltyClass: LoyaltyClass
-   ): Promise<LoyaltyClass> {
+   ): Promise<GoogleWalletResponse<LoyaltyClass>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/loyaltyClass/${resourceId}`,
-            {
-               method: 'PATCH',
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(loyaltyClass),
-            }
-         );
-         const result = await response.json();
-         return result as LoyaltyClass;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<LoyaltyClass>(
+         `${WALLET_API_BASE}/loyaltyClass/${resourceId}`,
+         {
+            method: 'PATCH',
+            body: JSON.stringify(loyaltyClass),
+         },
+         'Error patching loyalty class'
+      );
    }
 
    async createObjectEvent(
       eventTicketObject: EventTicketObject
-   ): Promise<EventTicketObject> {
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(`${WALLET_API_BASE}/eventTicketObject`, {
+   ): Promise<GoogleWalletResponse<EventTicketObject>> {
+      return this.handleRequest<EventTicketObject>(
+         `${WALLET_API_BASE}/eventTicketObject`,
+         {
             method: 'POST',
-            headers: {
-               Authorization: `Bearer ${token}`,
-               'Content-Type': 'application/json',
-            },
             body: JSON.stringify(eventTicketObject),
-         });
-         const result = await response.json();
-         return result as EventTicketObject;
-      } catch (error) {
-         throw error;
-      }
+         },
+         'Error creating event ticket object'
+      );
    }
 
    async createObjectLoyalty(
       loyaltyObject: LoyaltyObject
-   ): Promise<LoyaltyObject> {
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(`${WALLET_API_BASE}/loyaltyObject`, {
+   ): Promise<GoogleWalletResponse<LoyaltyObject>> {
+      return this.handleRequest<LoyaltyObject>(
+         `${WALLET_API_BASE}/loyaltyObject`,
+         {
             method: 'POST',
-            headers: {
-               Authorization: `Bearer ${token}`,
-               'Content-Type': 'application/json',
-            },
             body: JSON.stringify(loyaltyObject),
-         });
-         const result = await response.json();
-         return result as LoyaltyObject;
-      } catch (error) {
-         throw error;
-      }
+         },
+         'Error creating loyalty object'
+      );
    }
 
    async getObjectEvent(
       issuerId: string,
       identifier: string
-   ): Promise<EventTicketObject> {
+   ): Promise<GoogleWalletResponse<EventTicketObject>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/eventTicketObject/${resourceId}`,
-            {
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-            }
-         );
-         const result = await response.json();
-         return result as EventTicketObject;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<EventTicketObject>(
+         `${WALLET_API_BASE}/eventTicketObject/${resourceId}`,
+         { method: 'GET' },
+         'Error getting event ticket object'
+      );
    }
 
    async getObjectLoyalty(
       issuerId: string,
       identifier: string
-   ): Promise<LoyaltyObject> {
+   ): Promise<GoogleWalletResponse<LoyaltyObject>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/loyaltyObject/${resourceId}`,
-            {
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-            }
-         );
-         const result = await response.json();
-         return result as LoyaltyObject;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<LoyaltyObject>(
+         `${WALLET_API_BASE}/loyaltyObject/${resourceId}`,
+         { method: 'GET' },
+         'Error getting loyalty object'
+      );
    }
 
    async patchObjectEvent(
       issuerId: string,
       identifier: string,
       eventTicketObject: EventTicketObject
-   ): Promise<EventTicketObject> {
+   ): Promise<GoogleWalletResponse<EventTicketObject>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/eventTicketObject/${resourceId}`,
-            {
-               method: 'PATCH',
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(eventTicketObject),
-            }
-         );
-         const result = await response.json();
-         return result as EventTicketObject;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<EventTicketObject>(
+         `${WALLET_API_BASE}/eventTicketObject/${resourceId}`,
+         {
+            method: 'PATCH',
+            body: JSON.stringify(eventTicketObject),
+         },
+         'Error patching event ticket object'
+      );
    }
 
    async patchObjectLoyalty(
       issuerId: string,
       identifier: string,
       loyaltyObject: LoyaltyObject
-   ): Promise<LoyaltyObject> {
+   ): Promise<GoogleWalletResponse<LoyaltyObject>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/loyaltyObject/${resourceId}`,
-            {
-               method: 'PATCH',
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(loyaltyObject),
-            }
-         );
-         const result = await response.json();
-         return result as LoyaltyObject;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<LoyaltyObject>(
+         `${WALLET_API_BASE}/loyaltyObject/${resourceId}`,
+         {
+            method: 'PATCH',
+            body: JSON.stringify(loyaltyObject),
+         },
+         'Error patching loyalty object'
+      );
    }
 
    async pushNotification(
@@ -334,33 +288,23 @@ export class GoogleWalletLib {
          | 'eventTicketClass'
          | 'eventTicketObject',
       addMessageRequest: AddMessageRequest
-   ): Promise<AddMessageRequest> {
+   ): Promise<GoogleWalletResponse<AddMessageRequest>> {
       const resourceId = encodeURIComponent(`${issuerId}.${identifier}`);
-      try {
-         const token = await this.generateTokenAuth();
-         const response = await fetch(
-            `${WALLET_API_BASE}/${type}/${resourceId}/addMessage`,
-            {
-               method: 'POST',
-               headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-               },
-               body: JSON.stringify(addMessageRequest),
-            }
-         );
-         const result = await response.json();
-         return result as AddMessageRequest;
-      } catch (error) {
-         throw error;
-      }
+      return this.handleRequest<AddMessageRequest>(
+         `${WALLET_API_BASE}/${type}/${resourceId}/addMessage`,
+         {
+            method: 'POST',
+            body: JSON.stringify(addMessageRequest),
+         },
+         'Error sending push notification'
+      );
    }
 
    createPayloadEvent = (
       unixTime: number,
       origins: string[],
-      eventTicketClass: EventTicketClass,
-      eventTicketObjects: EventTicketObject
+      eventTicketClass: EventTicketClass | EventTicketClass[],
+      eventTicketObjects: EventTicketObject | EventTicketObject[]
    ): Payload<{
       eventTicketClasses: EventTicketClass[];
       eventTicketObjects: EventTicketObject[];
@@ -372,8 +316,12 @@ export class GoogleWalletLib {
          iat: unixTime,
          origins,
          payload: {
-            eventTicketClasses: [eventTicketClass],
-            eventTicketObjects: [eventTicketObjects],
+            eventTicketClasses: Array.isArray(eventTicketClass)
+               ? eventTicketClass
+               : [eventTicketClass],
+            eventTicketObjects: Array.isArray(eventTicketObjects)
+               ? eventTicketObjects
+               : [eventTicketObjects],
          },
       };
    };
@@ -381,8 +329,8 @@ export class GoogleWalletLib {
    createPayloadLoyalty = (
       unixTime: number,
       origins: string[],
-      loyaltyClass: LoyaltyClass,
-      loyaltyObjects: LoyaltyObject
+      loyaltyClass: LoyaltyClass | LoyaltyClass[],
+      loyaltyObjects: LoyaltyObject | LoyaltyObject[]
    ): Payload<{
       loyaltyClasses: LoyaltyClass[];
       loyaltyObjects: LoyaltyObject[];
@@ -394,8 +342,12 @@ export class GoogleWalletLib {
          iat: unixTime,
          origins,
          payload: {
-            loyaltyClasses: [loyaltyClass],
-            loyaltyObjects: [loyaltyObjects],
+            loyaltyClasses: Array.isArray(loyaltyClass)
+               ? loyaltyClass
+               : [loyaltyClass],
+            loyaltyObjects: Array.isArray(loyaltyObjects)
+               ? loyaltyObjects
+               : [loyaltyObjects],
          },
       };
    };

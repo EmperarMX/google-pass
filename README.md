@@ -148,16 +148,20 @@ The `FOIL_SHIMMER` effect renders only in the **native Google Wallet app** on iO
 
 ### Event Tickets
 
-The following example demonstrates the complete flow to create and deliver an event ticket.
+The following example demonstrates the complete flow to create and deliver event tickets (supporting single or multiple passes).
 
 ```typescript
-import { GoogleWalletLib } from 'google-pass';
+import {
+  GoogleWalletLib,
+  EventTicketClass,
+  EventTicketObject
+} from 'google-pass';
 
 const ISSUER_ID = '1234567890123456789'; // Your Issuer ID from Google Pay & Wallet Console
 
 const wallet = new GoogleWalletLib({ /* credentials */ });
 
-const eventClass = {
+const eventClass: EventTicketClass = {
   id: `${ISSUER_ID}.festival_2026`,
   issuerName: 'Acme Events',
   reviewStatus: 'UNDER_REVIEW',
@@ -165,24 +169,46 @@ const eventClass = {
   eventName: { defaultValue: { language: 'en-US', value: 'Annual Developer Summit 2026' } }
 };
 
-const eventObject = {
-  id: `${ISSUER_ID}.ticket_001`,
-  classId: eventClass.id,
-  state: 'ACTIVE',
-  ticketHolderName: 'Jane Doe',
-  barcode: { type: 'QR_CODE', value: 'TICKET-001' }
-};
+// Creating multiple pass objects for multiple tickets in a single save URL
+const eventObjects: EventTicketObject[] = [
+  {
+    id: `${ISSUER_ID}.ticket_001`,
+    classId: eventClass.id,
+    state: 'ACTIVE',
+    ticketHolderName: 'Jane Doe',
+    barcode: { type: 'QR_CODE', value: 'TICKET-001' }
+  },
+  {
+    id: `${ISSUER_ID}.ticket_002`,
+    classId: eventClass.id,
+    state: 'ACTIVE',
+    ticketHolderName: 'John Smith',
+    barcode: { type: 'QR_CODE', value: 'TICKET-002' }
+  }
+];
 
 // 1. Create Class (Handle if it already exists)
-let cResult: any = await wallet.createClassEvent(eventClass);
-if (cResult.error) cResult = await wallet.patchClassEvent(ISSUER_ID, 'festival_2026', eventClass);
+let cResult = await wallet.createClassEvent(eventClass);
+if (cResult.error) {
+  cResult = await wallet.patchClassEvent(ISSUER_ID, 'festival_2026', eventClass);
+}
 
-// 2. Create Object (Handle if it already exists)
-let oResult: any = await wallet.createObjectEvent(eventObject);
-if (oResult.error) oResult = await wallet.patchObjectEvent(ISSUER_ID, 'ticket_001', eventObject);
+// 2. Create Objects (Handle if they already exist)
+for (const obj of eventObjects) {
+  const identifier = obj.id.split('.')[1];
+  let oResult = await wallet.createObjectEvent(obj);
+  if (oResult.error) {
+    await wallet.patchObjectEvent(ISSUER_ID, identifier, obj);
+  }
+}
 
-// 3. Build the payload and generate the save URL
-const payload = wallet.createPayloadEvent(Math.floor(Date.now() / 1000), ['https://www.example.com'], eventClass, eventObject);
+// 3. Build the payload (pass single object OR array of objects) and generate the save URL
+const payload = wallet.createPayloadEvent(
+  Math.floor(Date.now() / 1000),
+  ['https://www.example.com'],
+  eventClass,
+  eventObjects // Pass an array or a single object
+);
 const saveUrl = wallet.generateSaveUrl(payload);
 // → https://pay.google.com/gp/v/save/<signed_jwt>
 ```
@@ -192,7 +218,13 @@ const saveUrl = wallet.generateSaveUrl(payload);
 Loyalty cards are ideal for representing store programs, coffee clubs, and badge collections. 
 
 ```typescript
-const loyaltyClass = {
+import {
+  GoogleWalletLib,
+  LoyaltyClass,
+  LoyaltyObject
+} from 'google-pass';
+
+const loyaltyClass: LoyaltyClass = {
   id: `${ISSUER_ID}.coffee_club`,
   issuerName: 'Acme Cafe',
   reviewStatus: 'UNDER_REVIEW',
@@ -201,26 +233,41 @@ const loyaltyClass = {
   programLogo: { sourceUri: { uri: 'https://example.com/logo.png' } }
 };
 
-const loyaltyObject = {
-  id: `${ISSUER_ID}.loyalty_001`,
-  classId: loyaltyClass.id,
-  state: 'ACTIVE',
-  accountName: 'Jane Doe',
-  accountId: 'C-98765',
-  loyaltyPoints: {
-     label: 'Visits',
-     balance: { string: '8 / 10' }
-  },
-  barcode: { type: 'QR_CODE', value: 'C-98765' }
-};
+const loyaltyObjects: LoyaltyObject[] = [
+  {
+    id: `${ISSUER_ID}.loyalty_001`,
+    classId: loyaltyClass.id,
+    state: 'ACTIVE',
+    accountName: 'Jane Doe',
+    accountId: 'C-98765',
+    loyaltyPoints: {
+      label: 'Visits',
+      balance: { string: '8 / 10' }
+    },
+    barcode: { type: 'QR_CODE', value: 'C-98765' }
+  }
+];
 
-let cResult: any = await wallet.createClassLoyalty(loyaltyClass);
-if (cResult.error) cResult = await wallet.patchClassLoyalty(ISSUER_ID, 'coffee_club', loyaltyClass);
+let cResult = await wallet.createClassLoyalty(loyaltyClass);
+if (cResult.error) {
+  cResult = await wallet.patchClassLoyalty(ISSUER_ID, 'coffee_club', loyaltyClass);
+}
 
-let oResult: any = await wallet.createObjectLoyalty(loyaltyObject);
-if (oResult.error) oResult = await wallet.patchObjectLoyalty(ISSUER_ID, 'loyalty_001', loyaltyObject);
+for (const obj of loyaltyObjects) {
+  const identifier = obj.id.split('.')[1];
+  let oResult = await wallet.createObjectLoyalty(obj);
+  if (oResult.error) {
+    await wallet.patchObjectLoyalty(ISSUER_ID, identifier, obj);
+  }
+}
 
-const payload = wallet.createPayloadLoyalty(Math.floor(Date.now() / 1000), ['https://www.example.com'], loyaltyClass, loyaltyObject);
+// Accepts single object or array of objects
+const payload = wallet.createPayloadLoyalty(
+  Math.floor(Date.now() / 1000),
+  ['https://www.example.com'],
+  loyaltyClass,
+  loyaltyObjects
+);
 const saveUrl = wallet.generateSaveUrl(payload);
 ```
 
@@ -260,15 +307,18 @@ Valid targets for the `type` property are: `'loyaltyClass' | 'loyaltyObject' | '
 
 When calling `createClassEvent` or `createObjectEvent` (or their Loyalty equivalents), if the ID already exists in your issuer account, the Google Wallet API returns an HTTP 409 Conflict. 
 
-By design, this library **does not throw a JavaScript error** when the `fetch` API call receives a 400-level HTTP response; instead, it returns the error JSON block generated by Google. 
+By design, this library **does not throw a JavaScript error** when the `fetch` API call receives a 400-level HTTP response; instead, it returns the structured response wrapper (`{ error: true, data: GoogleWalletErrorResponse, message: string }`).
 
-To handle this smoothly, you must check for `.error` on the result and fallback to patching:
+To handle this smoothly, you can check `if (classResult.error)` directly:
 
 ```typescript
-let classResult: any = await wallet.createClassLoyalty(myLoyaltyClass);
+let classResult = await wallet.createClassLoyalty(myLoyaltyClass);
 if (classResult.error) {
-  // Already exists, update it instead
+  // Already exists or failed, update it instead
   classResult = await wallet.patchClassLoyalty(ISSUER_ID, 'my_identifier', myLoyaltyClass);
+} else {
+  // Success! classResult.data is LoyaltyClass
+  console.log('Class created:', classResult.data.id);
 }
 ```
 
